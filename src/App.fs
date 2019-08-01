@@ -110,56 +110,64 @@ module Keyboard =
         document.addEventListener("keydown", !^(fun e -> update(e :?> _, true)))
         document.addEventListener("keyup", !^(fun e -> update(e :?> _, false)))
 
+type Graphics2d(ctx:CanvasRenderingContext2D) =
+    let ctx = ctx
+
+    member this.strokeRect (v1:Vec2) (dim:Vec2) (color:string) =
+        ctx.strokeStyle <- !^color
+        ctx.strokeRect (v1.x, v1.y, dim.x, dim.y)
+
+    member this.fillRect (v1:Vec2) (dim:Vec2) (color:string) =
+        ctx.fillStyle <- !^color
+        ctx.fillRect (v1.x, v1.y, dim.x, dim.y)
+
+    member this.strokeLine (v1:Vec2) (v2:Vec2) (color:string) =
+        ctx.beginPath()
+        ctx.strokeStyle <- !^color
+        ctx.moveTo (v1.x, v1.y)
+        ctx.lineTo (v2.x, v2.y)
+        ctx.stroke()
+
 module OverviewRenderer =
 
     let (CellSize:float) = 16.
     let (PlayerSize:float) = CellSize / 1.25
 
-    let renderGrid (ctx:CanvasRenderingContext2D) offset level =
+    let renderGrid (gfx:Graphics2d) offset level =
         for y in [0..level.Height-1] do
             for x in [0..level.Width-1] do
                 let fillStyle =
                     match level.Map.[y].[x] with
                     | Solid _ -> "#ffffff"
                     | _ -> "#263545"
-                ctx.fillStyle <- !^fillStyle
                 let v = (CellSize * ({x=float(x); y=float(y)})) + offset
-                ctx.fillRect (v.x, v.y, CellSize, CellSize)
+                gfx.fillRect v {x=CellSize; y=CellSize} fillStyle
+                gfx.strokeRect v {x=CellSize; y=CellSize} "rgb(200,200,200)"
 
-    let renderPlayer (ctx:CanvasRenderingContext2D) (offset:Vec2) gameState =
+    let renderPlayer (gfx:Graphics2d) (offset:Vec2) gameState =
         let { Player=player; CameraPlane=camera } = gameState
         let { Position=pos } = player
 
-        ctx.fillStyle <- !^"rgb(200,0,0)"
-        let pv = (CellSize * player.Position) + offset
-        ctx.fillRect (pv.x-PlayerSize/2., pv.y-PlayerSize/2., PlayerSize, PlayerSize)
+        let pv = (CellSize * player.Position) - (0.5 * {x=PlayerSize;y=PlayerSize}) + offset
+        gfx.fillRect pv {x=PlayerSize;y=PlayerSize} "rgb(200,0,0)"
 
-        ctx.strokeStyle <- !^"rgb(0,200,0)"
-        ctx.beginPath()
         let f1 = offset + (CellSize * player.Position) + (20. * player.Direction)
         let f2 = offset + (CellSize * player.Position)
-        ctx.moveTo(f1.x, f1.y)
-        ctx.lineTo(f2.x, f2.y)
-        ctx.stroke()
+        gfx.strokeLine f1 f2 "rgb(0,200,0)"
 
         let c1 = 150. * (player.Direction - camera) + (CellSize * player.Position) + offset
         let c2 = 150. * (player.Direction + camera) + (CellSize * player.Position) + offset
-        ctx.beginPath()
-        ctx.moveTo(f2.x, f2.y)
-        ctx.lineTo(c1.x, c1.y)
-        ctx.moveTo(c2.x, c2.y)
-        ctx.lineTo(f2.x, f2.y)
-        ctx.stroke()
+        gfx.strokeLine f2 c1 "rgb(0,200,0)"
+        gfx.strokeLine c2 f2 "rgb(0,200,0)"
 
-    let render (ctx:CanvasRenderingContext2D) (offset:Vec2) gameState =
+    let render (gfx:Graphics2d) (offset:Vec2) gameState =
         let { Level = level } = gameState
 
-        ctx.fillStyle <- !^"#263545"
-        ctx.fillRect (0., 0., 640., 400.)
+        gfx.fillRect {x=0.; y=0.} {x=640.; y=400.} "#263545"
 
-        renderGrid ctx offset level
+        renderGrid gfx offset level
 
-        renderPlayer ctx offset gameState
+        renderPlayer gfx offset gameState
 
 let update t gameState =
     let s = (t-gameState.Ticks)/100.
@@ -197,20 +205,19 @@ let update t gameState =
         CameraPlane=updated_camera
         Ticks = t}
 
-let rec gameLoop (ctx:CanvasRenderingContext2D) t gameState =
+let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
 
-    ctx.fillStyle <- !^"#263545"
-    ctx.fillRect (0.,0.,320.,200.)
-    OverviewRenderer.render ctx {x=0.; y=0.} updatedState
+    OverviewRenderer.render gfx {x=0.; y=0.} updatedState
 
-    window.requestAnimationFrame(fun t -> (gameLoop ctx t updatedState)) |> ignore
+    window.requestAnimationFrame(fun t -> (gameLoop gfx t updatedState)) |> ignore
 
 let level = Level.loadLevel mapData
 
 let canvas = document.querySelector(".view") :?> HTMLCanvasElement
 let ctx = canvas.getContext_2d()
+let gfx = new Graphics2d(ctx)
 
 Keyboard.initKeyboard ()
-gameLoop ctx 0. initState
+gameLoop gfx 0. initState
 
