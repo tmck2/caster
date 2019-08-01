@@ -9,6 +9,8 @@ type Vec2 =
     { x: float; y: float }
     static member (*) (s:float, v:Vec2):Vec2 = { x = s*v.x; y = s*v.y }
     static member (+) (a:Vec2, b:Vec2):Vec2 = { x = a.x + b.x; y = a.y + b.y }
+    static member (-) (a:Vec2, b:Vec2):Vec2 = { x = a.x - b.x; y = a.y - b.y }
+    static member mag (v:Vec2) = sqrt(v.x*v.x+v.y*v.y)
     static member rotate (rads:float) (v:Vec2) =
         { v with 
             x = v.x * cos(rads) + v.y * sin(rads)
@@ -85,7 +87,7 @@ let initState = {
         Position = { x = 13.; y = 11. }
         Direction = { x = 0.; y = -1. }
     }
-    CameraPlane = { x = 0.; y = 0.66 }
+    CameraPlane = { x = 0.66; y = 0. }
     Level = Level.loadLevel mapData
 }
 
@@ -124,7 +126,10 @@ module OverviewRenderer =
                 let v = (CellSize * ({x=float(x); y=float(y)})) + offset
                 ctx.fillRect (v.x, v.y, CellSize, CellSize)
 
-    let renderPlayer (ctx:CanvasRenderingContext2D) (offset:Vec2) player =
+    let renderPlayer (ctx:CanvasRenderingContext2D) (offset:Vec2) gameState =
+        let { Player=player; CameraPlane=camera } = gameState
+        let { Position=pos } = player
+
         ctx.fillStyle <- !^"rgb(200,0,0)"
         let pv = (CellSize * player.Position) + offset
         ctx.fillRect (pv.x-PlayerSize/2., pv.y-PlayerSize/2., PlayerSize, PlayerSize)
@@ -137,27 +142,60 @@ module OverviewRenderer =
         ctx.lineTo(f2.x, f2.y)
         ctx.stroke()
 
+        let c1 = 150. * (player.Direction - camera) + (CellSize * player.Position) + offset
+        let c2 = 150. * (player.Direction + camera) + (CellSize * player.Position) + offset
+        ctx.beginPath()
+        ctx.moveTo(f2.x, f2.y)
+        ctx.lineTo(c1.x, c1.y)
+        ctx.moveTo(c2.x, c2.y)
+        ctx.lineTo(f2.x, f2.y)
+        ctx.stroke()
+
     let render (ctx:CanvasRenderingContext2D) (offset:Vec2) gameState =
-        let { Level = level; Player = player } = gameState
+        let { Level = level } = gameState
+
+        ctx.fillStyle <- !^"#263545"
+        ctx.fillRect (0., 0., 640., 400.)
 
         renderGrid ctx offset level
 
-        renderPlayer ctx offset player
+        renderPlayer ctx offset gameState
 
 let update t gameState =
     let s = (t-gameState.Ticks)/100.
-    if Keyboard.UpPressed then
-        { gameState with
-            Player={gameState.Player with
-                        Position = gameState.Player.Position + (s * gameState.Player.Direction)}
-            Ticks = t}
-    elif Keyboard.RightPressed then
-        { gameState with 
-            Player={gameState.Player with
-                        Direction = (Vec2.rotate (-Math.PI/100.) gameState.Player.Direction)}
-            Ticks = t}
-    else
-        { gameState with Ticks = t }
+    let {CameraPlane=camera; Player=player} = gameState
+    let {Position=pos; Direction=dir} = player
+
+    let updated_pos =
+        if Keyboard.UpPressed then
+            pos + (s * dir)
+        elif Keyboard.DownPressed then
+            pos + (-s * dir)
+        else
+            pos
+
+    let updated_dir =
+        if Keyboard.RightPressed then
+            Vec2.rotate (-s/2.) dir 
+        elif Keyboard.LeftPressed then
+            Vec2.rotate (s/2.) dir
+        else
+            dir
+
+    let updated_camera =
+        if Keyboard.RightPressed then
+            Vec2.rotate (-s/2.) camera 
+        elif Keyboard.LeftPressed then
+            Vec2.rotate (s/2.) camera
+        else
+            camera
+
+    { gameState with
+        Player={gameState.Player with
+                    Position = updated_pos
+                    Direction = updated_dir}
+        CameraPlane=updated_camera
+        Ticks = t}
 
 let rec gameLoop (ctx:CanvasRenderingContext2D) t gameState =
     let updatedState = update t gameState
