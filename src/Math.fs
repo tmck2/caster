@@ -16,7 +16,7 @@ type Vec2 =
             y = -v.x * sin(rads) + v.y * cos(rads)
         }
 
-let intersect p0 l0 l n:Vec2 option =
+let intersect p0 n l0 l:Vec2 option =
     let denom = Vec2.dot l n
     if denom <= 0. then
         None

@@ -5,8 +5,6 @@ open Fable.Import.JS
 open Fable.Core.JsInterop
 open Fable.Import.Browser
 open Math
-open Level
-open Levels
 open Model
 open Graphics2d
 open OverviewRenderer
@@ -15,10 +13,10 @@ let initState:Model.GameState = {
     Ticks = 0.
     Player = {
         Position = { x = 64.; y = 64. }
-        Direction = { x = sqrt(2.); y = -sqrt(2.) }
+        Direction = { x = 0.; y = -1. }
     }
     CameraPlane = { x = 0.66; y = 0. }
-    Level = Level.loadLevel level1
+    Level = { Map = [] }
 }
 
 module Keyboard =
@@ -79,23 +77,36 @@ let update t gameState =
 let test (gfx:Graphics2d) updatedState =
     gfx.fillRect {x=0.;y=0.} {x=640.;y=400.} "#263545"
 
-    let {Player=player} = updatedState
+    let {Player=player;CameraPlane=c} = updatedState
     let {Position=p;Direction=r} = player
     let off = {x=200.;y=100.}
     let size = {x=128.;y=128.}
 
     let paintIntersection x =
         match x with
-        | Some i -> gfx.fillCircle (i+off) 5. "red"
+        | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    intersect {x=0.;y=128.} p r {x=0.;y= 1.} |> paintIntersection
-    intersect {x=128.;y=0.} p r {x=1.; y=0.} |> paintIntersection
-    intersect {x=0.;y=0.} p r {x= -1.;y= 0.} |> paintIntersection
-    intersect {x=0.;y=0.} p r {x= 0.;y= -1.} |> paintIntersection
+    let intersectWithSquare r =
+        intersect {x=0.;y=128.} {x=0.;y= 1.} p r |> paintIntersection
+        intersect {x=128.;y=0.} {x=1.; y=0.} p r |> paintIntersection
+        intersect {x=0.;y=0.} {x= -1.;y= 0.} p r |> paintIntersection
+        intersect {x=0.;y=0.} {x= 0.;y= -1.} p r |> paintIntersection
+
+    let numRays = 15 
+
+    [for i in 0..numRays do yield float(i)/float(numRays)] |>
+    Seq.map (fun t -> ((1.0 - t) * (r - c)) + (t * (r + c)))
+    |> Seq.iter intersectWithSquare
 
     gfx.strokeRect off size "white"
-    gfx.strokeLine (p + off) (600. * r + p + off) "white"
+    [for i in 0..numRays do yield float(i)/float(numRays)] |>
+    Seq.map (fun t -> ((1.0 - t) * (r - c)) + (t * (r + c)))
+    |> Seq.iter (fun v -> gfx.strokeLine (p + off) (600. * v + p + off) "white")
+    //gfx.strokeLine (p + off) (600. * r + p + off) "white"
+    //gfx.strokeLine (p + off) (600. * (r - c) + p + off) "white"
+    //gfx.strokeLine (p + off) (600. * (r + c) + p + off) "white"
+    gfx.strokeLine (p + off - (50. * c)) (p + off + (50. * c)) "white"
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
@@ -104,8 +115,6 @@ let rec gameLoop (gfx:Graphics2d) t gameState =
     test gfx updatedState
 
     window.requestAnimationFrame(fun t -> (gameLoop gfx t updatedState)) |> ignore
-
-let level = Level.loadLevel level1
 
 let canvas = document.querySelector(".view") :?> HTMLCanvasElement
 let ctx = canvas.getContext_2d()
