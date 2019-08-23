@@ -15,6 +15,7 @@ type Vec2 =
             x = v.x * cos(rads) + v.y * sin(rads)
             y = -v.x * sin(rads) + v.y * cos(rads)
         }
+    static member perp (v:Vec2) = {x = -v.y; y=v.x}
 
 let intersect p0 n l0 l:Vec2 option =
     let denom = Vec2.dot l n

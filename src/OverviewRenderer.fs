@@ -3,7 +3,6 @@ module OverviewRenderer
 open Math
 open Graphics2d
 open Model
-open Level
 
 let (CellSize:float) = 16.
 let (PlayerSize:float) = CellSize / 1.5

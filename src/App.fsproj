@@ -12,9 +12,6 @@
     <Compile Include="Graphics2d.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OverviewRenderer.fs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
