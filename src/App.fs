@@ -16,11 +16,13 @@ let initState:Model.GameState = {
     }
     CameraPlane = { x = 0.66; y = 0. }
     Level = { Map = [
-                Wall.create (256.,0.) (0.,0.)
+                Wall.create (384.,0.) (0.,0.)
                 Wall.create (0.,0.) (0.,128.) 
                 Wall.create (0.,128.) (128.,256.)
                 Wall.create (128.,256.) (256.,256.)
-                Wall.create (256.,256.) (256.,0.)
+                Wall.create (256.,256.) (256.,128.)
+                Wall.create (256.,128.) (384.,128.)
+                Wall.create (384.,128.) (384.,0.)
             ] }
 }
 
@@ -92,15 +94,24 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let numRays = 15 
+    let numRays = 320 
 
     let intersectLevel level p r =
         level.Map
         |> Seq.map (fun w ->
-                        intersect w.Start (Vec2.perp (w.End-w.Start)) p r)
-        |> Seq.map (fun dist ->
+                        (w,intersect w.Start (Vec2.perp (w.End-w.Start)) p r))
+        |> Seq.map (fun (w,dist) ->
                         match dist with
-                        | Some d -> d
+                        | Some d -> 
+                            let v = (d * r) + p
+                            let ab = w.End - w.Start
+                            let ac = w.End - v
+                            let kac = Vec2.dot ab ac
+                            let kab = Vec2.dot ab ab
+                            if (Math.abs kac) <= 0.001 || (Math.abs (kac-kab)) <= 0.001 || (kac > 0. && kac<=kab) then
+                                d
+                            else
+                                1000.
                         | None -> 1000.)
         |> Seq.min
 

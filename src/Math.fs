@@ -22,5 +22,5 @@ let intersect p0 n l0 l:float option =
     if denom <= 0. then
         None
     else
-        Some (Vec2.dot (p0 - l0) n) / denom
+        Some ((Vec2.dot (p0 - l0) n) / denom)
 
