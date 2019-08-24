@@ -92,23 +92,28 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let intersectWall w p r =
-        intersect w.Start (Vec2.perp (w.End-w.Start)) p r |> paintIntersection
-
     let numRays = 15 
 
-    level.Map
-    |> Seq.iter (fun wall ->
-        [for i in 0..numRays do yield float(i)/float(numRays)] |>
-        Seq.map (fun t -> ((1.0 - t) * (r - c)) + (t * (r+c)))
-        |> Seq.iter (fun r -> intersectWall wall p r))
+    let intersectLevel level p r =
+        level.Map
+        |> Seq.map (fun w ->
+                        intersect w.Start (Vec2.perp (w.End-w.Start)) p r)
+        |> Seq.map (fun dist ->
+                        match dist with
+                        | Some d -> d
+                        | None -> 1000.)
+        |> Seq.min
+
+    [for i in 0..numRays do yield float(i)/float(numRays)]
+    |> Seq.map (fun t -> ((1.0 - t) * (r - c)) + (t * (r+c)))
+    |> Seq.iter (fun r -> 
+        let d = intersectLevel level p r
+        let v = (d * r) + p
+        gfx.strokeLine (p + off) (v + off) "white")
     
     level.Map
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
 
-    [for i in 0..numRays do yield float(i)/float(numRays)] |>
-    Seq.map (fun t -> ((1.0 - t) * (r - c)) + (t * (r + c)))
-    |> Seq.iter (fun v -> gfx.strokeLine (p + off) (600. * v + p + off) "white")
     gfx.strokeLine (p + off - (50. * c)) (p + off + (50. * c)) "white"
 
 let rec gameLoop (gfx:Graphics2d) t gameState =

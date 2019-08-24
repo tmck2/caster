@@ -17,11 +17,10 @@ type Vec2 =
         }
     static member perp (v:Vec2) = {x = -v.y; y=v.x}
 
-let intersect p0 n l0 l:Vec2 option =
+let intersect p0 n l0 l:float option =
     let denom = Vec2.dot l n
     if denom <= 0. then
         None
     else
-        let d = (Vec2.dot (p0 - l0) n) / denom
-        Some ((d * l) + l0)
+        Some (Vec2.dot (p0 - l0) n) / denom
 
