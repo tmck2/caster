@@ -30,3 +30,8 @@ type Graphics2d(ctx:CanvasRenderingContext2D) =
         ctx.arc(c.x, c.y, r, 0., 2. * Math.PI)
         ctx.fill()
 
+    member this.strokeText (p:Vec2) (str:string) =
+        ctx.fillStyle <- !^("white")
+        ctx.font <- "16px sans-serif"
+        ctx.fillText(str,p.x,p.y)
+

@@ -113,6 +113,7 @@ let test (gfx:Graphics2d) updatedState =
                             else
                                 1000.
                         | None -> 1000.)
+        |> Seq.filter (fun d -> d >= 0.)
         |> Seq.min
 
     [for i in 0..numRays do yield float(i)/float(numRays)]
@@ -126,6 +127,9 @@ let test (gfx:Graphics2d) updatedState =
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
 
     gfx.strokeLine (p + off - (50. * c)) (p + off + (50. * c)) "white"
+
+    gfx.strokeText {x=0.; y=16.} (sprintf "%A" p)
+    gfx.strokeText {x=0.; y=32.} (sprintf "%A" r)
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
