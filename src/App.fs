@@ -11,7 +11,7 @@ open Graphics2d
 let initState:Model.GameState = {
     Ticks = 0.
     Player = {
-        Position = { x = 64.; y = 64. }
+        Position = { x = 64.; y = 32. }
         Direction = { x = 0.; y = -1. }
     }
     CameraPlane = { x = 0.66; y = 0. }
@@ -94,7 +94,7 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let numRays = 320 
+    let numRays = 100
 
     let intersectLevel level p r =
         level.Map
@@ -116,12 +116,24 @@ let test (gfx:Graphics2d) updatedState =
         |> Seq.filter (fun d -> d >= 0.)
         |> Seq.min
 
-    [for i in 0..numRays do yield float(i)/float(numRays)]
-    |> Seq.map (fun t -> ((1.0 - t) * (r - c)) + (t * (r+c)))
-    |> Seq.iter (fun r -> 
-        let d = intersectLevel level p r
-        let v = (d * r) + p
-        gfx.strokeLine (p + off) (v + off) "white")
+    let height d = 75. * (1. - d/500.) + d/500.
+
+    gfx.strokeRect {x=540.; y=250.} {x=100.;y=100.} "white"
+
+    [for i in 0..numRays do yield (i, float(i)/float(numRays))]
+    |> Seq.map (fun (i, t) -> (i, ((1.0 - t) * (r - c)) + (t * (r+c))))
+    |> Seq.iter (fun (i, ray) -> 
+        let d = intersectLevel level p ray
+        let m = (d * ray) + p
+        let x = m - p
+        let v = Vec2.normalize c
+        let proj = (Vec2.dot x v) * v
+        let rej = Vec2.mag (x - proj)
+        let h = (height rej) / 2.
+        gfx.strokeLine (p + off) (m + off) "white"
+
+        gfx.strokeLine {x=540. + float(i); y=300. - h} {x=540. + float(i);y=300. + h} "rgb(128,128,128)"
+    )
     
     level.Map
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
@@ -130,6 +142,7 @@ let test (gfx:Graphics2d) updatedState =
 
     gfx.strokeText {x=0.; y=16.} (sprintf "%A" p)
     gfx.strokeText {x=0.; y=32.} (sprintf "%A" r)
+    gfx.strokeText {x=0.; y=48.} (sprintf "%A" c)
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
