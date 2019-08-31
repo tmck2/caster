@@ -18,8 +18,8 @@ let initState:Model.GameState = {
     Level = { Map = [
                 Wall.create (384.,0.) (0.,0.)
                 Wall.create (0.,0.) (0.,128.) 
-                Wall.create (0.,128.) (128.,256.)
-                Wall.create (128.,256.) (256.,256.)
+                Wall.create (0.,128.) (0.,256.)
+                Wall.create (0.,256.) (256.,256.)
                 Wall.create (256.,256.) (256.,128.)
                 Wall.create (256.,128.) (384.,128.)
                 Wall.create (384.,128.) (384.,0.)
@@ -82,7 +82,7 @@ let update t gameState =
         Ticks = t}
 
 let test (gfx:Graphics2d) updatedState =
-    gfx.fillRect {x=0.;y=0.} {x=640.;y=400.} "#263545"
+    gfx.fillRect {x=0.;y=0.} {x=800.;y=600.} "#263545"
 
     let {Player=player;CameraPlane=c;Level=level} = updatedState
     let {Position=p;Direction=r} = player
@@ -94,7 +94,7 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let numRays = 100
+    let numRays = 300
 
     let intersectLevel level p r =
         level.Map
@@ -109,21 +109,23 @@ let test (gfx:Graphics2d) updatedState =
                             let kac = Vec2.dot ab ac
                             let kab = Vec2.dot ab ab
                             if (Math.abs kac) <= 0.001 || (Math.abs (kac-kab)) <= 0.001 || (kac > 0. && kac<=kab) then
-                                d
+                                (d, Vec2.normalize (Vec2.perp ab))
                             else
-                                1000.
-                        | None -> 1000.)
-        |> Seq.filter (fun d -> d >= 0.)
-        |> Seq.min
+                                (1000., {x=0.;y=0.})
+                        | None -> (1000., {x=0.;y=0.}))
+        |> Seq.filter (fun (d,v) -> d >= 0.)
+        |> Seq.minBy (fun (d,v) -> d)
 
-    let height d = 75. * (1. - d/500.) + d/500.
+    let height d = 150. * (1. - d/400.) + d/400.
 
-    gfx.strokeRect {x=540.; y=250.} {x=100.;y=100.} "white"
+    gfx.strokeRect {x=500.; y=250.} {x=300.;y=300.} "white"
+
+    let light_dir = Vec2.normalize {x = -1.;y = -2.}
 
     [for i in 0..numRays do yield (i, float(i)/float(numRays))]
     |> Seq.map (fun (i, t) -> (i, ((1.0 - t) * (r - c)) + (t * (r+c))))
     |> Seq.iter (fun (i, ray) -> 
-        let d = intersectLevel level p ray
+        let (d,n) = intersectLevel level p ray
         let m = (d * ray) + p
         let x = m - p
         let v = Vec2.normalize c
@@ -132,7 +134,11 @@ let test (gfx:Graphics2d) updatedState =
         let h = (height rej) / 2.
         gfx.strokeLine (p + off) (m + off) "white"
 
-        gfx.strokeLine {x=540. + float(i); y=300. - h} {x=540. + float(i);y=300. + h} "rgb(128,128,128)"
+        let mutable c = 128
+        let b = (Vec2.dot n light_dir) * 128.
+        if (b > 0.) then c <- c + int(128. * b)
+
+        gfx.strokeLine {x=500. + float(i); y=400. - h} {x=500. + float(i);y=400. + h} (sprintf "rgb(%i,%i,%i)" c c c)
     )
     
     level.Map
