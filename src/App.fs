@@ -23,6 +23,10 @@ let initState:Model.GameState = {
                 Wall.create (256.,256.) (256.,128.)
                 Wall.create (256.,128.) (384.,128.)
                 Wall.create (384.,128.) (384.,0.)
+                Wall.create (96., 64.) (128., 64.)
+                Wall.create (128.,64.) (128., 96.)
+                Wall.create (128.,96.) (96.,96.)
+                Wall.create (96.,96.) (96.,64.)
             ] }
 }
 
@@ -94,7 +98,7 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let numRays = 300
+    let numRays = 100
 
     let intersectLevel level p r =
         level.Map
@@ -116,11 +120,13 @@ let test (gfx:Graphics2d) updatedState =
         |> Seq.filter (fun (d,v) -> d >= 0.)
         |> Seq.minBy (fun (d,v) -> d)
 
-    let height d = 150. * (1. - d/400.) + d/400.
+    let height d = 1./d * (64. * 150.)
 
     gfx.strokeRect {x=500.; y=250.} {x=300.;y=300.} "white"
 
     let light_dir = Vec2.normalize {x = -1.;y = -2.}
+
+    let w = 300. / float(numRays)
 
     [for i in 0..numRays do yield (i, float(i)/float(numRays))]
     |> Seq.map (fun (i, t) -> (i, ((1.0 - t) * (r - c)) + (t * (r+c))))
@@ -138,7 +144,10 @@ let test (gfx:Graphics2d) updatedState =
         let b = (Vec2.dot n light_dir) * 128.
         if (b > 0.) then c <- c + int(128. * b)
 
-        gfx.strokeLine {x=500. + float(i); y=400. - h} {x=500. + float(i);y=400. + h} (sprintf "rgb(%i,%i,%i)" c c c)
+        //gfx.strokeLine {x=500. + float(i); y=400. - h} {x=500. + float(i);y=400. + h} (sprintf "rgb(%i,%i,%i)" c c c)
+        let clr = sprintf "rgb(%i,%i,%i)" c c c
+        gfx.fillRect {x=500. + float(i)*w;y=400. - h} {x=w;y=h*2.} clr
+        gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" rej)
     )
     
     level.Map
