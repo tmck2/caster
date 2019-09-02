@@ -150,13 +150,12 @@ let test (gfx:Graphics2d) updatedState =
         gfx.strokeLine (p + off) (m + off) "white"
 
         let mutable c = 128
-        let b = (Vec2.dot n light_dir) * 128.
-        if (b > 0.) then c <- c + int(128. * b)
+        let b = (Vec2.dot n light_dir)
+        if (b > 0.) then c <- c + int(b * 128.) else c <- c + int(b * -128.)
 
-        //gfx.strokeLine {x=500. + float(i); y=400. - h} {x=500. + float(i);y=400. + h} (sprintf "rgb(%i,%i,%i)" c c c)
         let clr = sprintf "rgb(%i,%i,%i)" c c c
         gfx.fillRect {x=500. + float(i)*w;y=400. - h} {x=w;y=h*2.} clr
-        //gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" rej)
+        gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" b)
     )
     
     level.Map
