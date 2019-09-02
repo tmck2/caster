@@ -11,22 +11,28 @@ open Graphics2d
 let initState:Model.GameState = {
     Ticks = 0.
     Player = {
-        Position = { x = 64.; y = 32. }
+        Position = { x = 8.; y = 11. }
         Direction = { x = 0.; y = -1. }
     }
     CameraPlane = { x = 0.66; y = 0. }
     Level = { Map = [
-                Wall.create (384.,0.) (0.,0.)
-                Wall.create (0.,0.) (0.,128.) 
-                Wall.create (0.,128.) (0.,256.)
-                Wall.create (0.,256.) (256.,256.)
-                Wall.create (256.,256.) (256.,128.)
-                Wall.create (256.,128.) (384.,128.)
-                Wall.create (384.,128.) (384.,0.)
-                Wall.create (96., 64.) (128., 64.)
-                Wall.create (128.,64.) (128., 96.)
-                Wall.create (128.,96.) (96.,96.)
-                Wall.create (96.,96.) (96.,64.)
+                Wall.create (38.4,0.) (0.,0.)
+                Wall.create (0.,0.) (0.,12.8) 
+                Wall.create (0.,12.8) (0.,25.6)
+                Wall.create (0.,25.6) (25.6,25.6)
+                Wall.create (25.6,25.6) (25.6,12.8)
+                Wall.create (25.6,12.8) (38.4,12.8)
+                Wall.create (38.4,12.8) (38.4,0.)
+                
+                Wall.create (9.6, 6.4) (12.8,6.4)
+                Wall.create (12.8,6.4) (12.8,9.6)
+                Wall.create (12.8,9.6) (9.6,9.6)
+                Wall.create (9.6,9.6) (9.6,6.4)
+
+                Wall.create (9.6,12.8) (12.8,12.8)
+                Wall.create (12.8,12.8) (12.8,16.)
+                Wall.create (12.8,16.) (9.6,16.)
+                Wall.create (9.6,16.) (9.6,12.8)
             ] }
 }
 
@@ -50,7 +56,8 @@ module Keyboard =
         document.addEventListener("keyup", !^(fun e -> update(e :?> _, false)))
 
 let update t gameState =
-    let s = (t-gameState.Ticks)/20.
+    let s = (t-gameState.Ticks)/200.
+    let sa = s/2.
     let {CameraPlane=camera; Player=player} = gameState
     let {Position=pos; Direction=dir} = player
 
@@ -64,17 +71,17 @@ let update t gameState =
 
     let updated_dir =
         if Keyboard.RightPressed then
-            Vec2.rotate (-s/8.) dir 
+            Vec2.rotate (-sa) dir 
         elif Keyboard.LeftPressed then
-            Vec2.rotate (s/8.) dir
+            Vec2.rotate (sa) dir
         else
             dir
 
     let updated_camera =
         if Keyboard.RightPressed then
-            Vec2.rotate (-s/8.) camera 
+            Vec2.rotate (-sa) camera 
         elif Keyboard.LeftPressed then
-            Vec2.rotate (s/8.) camera
+            Vec2.rotate (sa) camera
         else
             camera
 
@@ -98,7 +105,7 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let numRays = 100
+    let numRays = 300
 
     let intersectLevel level p r =
         level.Map
@@ -120,8 +127,10 @@ let test (gfx:Graphics2d) updatedState =
         |> Seq.filter (fun (d,v) -> d >= 0.)
         |> Seq.minBy (fun (d,v) -> d)
 
-    let height d = 1./d * (64. * 150.)
+    let height d = 1./d * 200.
 
+    gfx.fillRect {x=500.; y=250.} {x=300.;y=150.} "rgb(32,32,32)"
+    gfx.fillRect {x=500.; y=400.} {x=300.;y=150.} "rgb(64,64,64)"
     gfx.strokeRect {x=500.; y=250.} {x=300.;y=300.} "white"
 
     let light_dir = Vec2.normalize {x = -1.;y = -2.}
@@ -137,7 +146,7 @@ let test (gfx:Graphics2d) updatedState =
         let v = Vec2.normalize c
         let proj = (Vec2.dot x v) * v
         let rej = Vec2.mag (x - proj)
-        let h = (height rej) / 2.
+        let h = height rej
         gfx.strokeLine (p + off) (m + off) "white"
 
         let mutable c = 128
@@ -147,13 +156,13 @@ let test (gfx:Graphics2d) updatedState =
         //gfx.strokeLine {x=500. + float(i); y=400. - h} {x=500. + float(i);y=400. + h} (sprintf "rgb(%i,%i,%i)" c c c)
         let clr = sprintf "rgb(%i,%i,%i)" c c c
         gfx.fillRect {x=500. + float(i)*w;y=400. - h} {x=w;y=h*2.} clr
-        gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" rej)
+        //gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" rej)
     )
     
     level.Map
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
 
-    gfx.strokeLine (p + off - (50. * c)) (p + off + (50. * c)) "white"
+    //gfx.strokeLine (p + off - (50. * c)) (p + off + (50. * c)) "white"
 
     gfx.strokeText {x=0.; y=16.} (sprintf "%A" p)
     gfx.strokeText {x=0.; y=32.} (sprintf "%A" r)
