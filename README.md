@@ -1,6 +1,6 @@
 # Fable Caster
 
-A browser-based ray-casdting application built using F# and the Fable compiler.
+A browser-based ray-casting engine built using F# and the Fable compiler.
 
 ## Requirements
 
