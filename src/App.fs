@@ -8,6 +8,10 @@ open Math
 open Model
 open Graphics2d
 
+let NumRays = 300
+let Width = 300.
+let Height = 300.
+
 let initState:Model.GameState = {
     Ticks = 0.
     Player = {
@@ -58,16 +62,25 @@ module Keyboard =
 let update t gameState =
     let s = (t-gameState.Ticks)/200.
     let sa = s/2.
-    let {CameraPlane=camera; Player=player} = gameState
+    let {CameraPlane=camera; Player=player; Level=level} = gameState
     let {Position=pos; Direction=dir} = player
 
-    let updated_pos =
+    let mutable updated_pos =
         if Keyboard.UpPressed then
             pos + (s * dir)
         elif Keyboard.DownPressed then
             pos + (-s * dir)
         else
             pos
+
+    let levelCircleCollision pos =
+        level.Map
+        |> Seq.exists (fun w ->
+            lineCircleCollision w.Start w.End pos 1.75 
+        )
+
+    if (levelCircleCollision updated_pos) then
+        updated_pos <- pos
 
     let updated_dir =
         if Keyboard.RightPressed then
@@ -92,7 +105,7 @@ let update t gameState =
         CameraPlane=updated_camera
         Ticks = t}
 
-let test (gfx:Graphics2d) updatedState =
+let overhead (gfx:Graphics2d) updatedState =
     gfx.fillRect {x=0.;y=0.} {x=800.;y=600.} "#263545"
 
     let {Player=player;CameraPlane=c;Level=level} = updatedState
@@ -105,8 +118,6 @@ let test (gfx:Graphics2d) updatedState =
         | Some i -> gfx.fillCircle (i+off) 3. "red"
         | None -> ()
 
-    let numRays = 300
-
     let intersectLevel level p r =
         level.Map
         |> Seq.map (fun w ->
@@ -115,12 +126,8 @@ let test (gfx:Graphics2d) updatedState =
                         match dist with
                         | Some d -> 
                             let v = (d * r) + p
-                            let ab = w.End - w.Start
-                            let ac = w.End - v
-                            let kac = Vec2.dot ab ac
-                            let kab = Vec2.dot ab ab
-                            if (Math.abs kac) <= 0.001 || (Math.abs (kac-kab)) <= 0.001 || (kac > 0. && kac<=kab) then
-                                (d, Vec2.normalize (Vec2.perp ab))
+                            if pointOnLine w.Start w.End v then
+                                (d, Vec2.normalize (Vec2.perp (w.End-w.Start)))
                             else
                                 (1000., {x=0.;y=0.})
                         | None -> (1000., {x=0.;y=0.}))
@@ -129,15 +136,15 @@ let test (gfx:Graphics2d) updatedState =
 
     let height d = 1./d * 200.
 
-    gfx.fillRect {x=500.; y=250.} {x=300.;y=150.} "rgb(32,32,32)"
-    gfx.fillRect {x=500.; y=400.} {x=300.;y=150.} "rgb(64,64,64)"
-    gfx.strokeRect {x=500.; y=250.} {x=300.;y=300.} "white"
+    gfx.fillRect {x=500.; y=250.} {x=Width;y=Height/2.} "rgb(32,32,32)"
+    gfx.fillRect {x=500.; y=400.} {x=Width;y=Height/2.} "rgb(64,64,64)"
+    gfx.strokeRect {x=500.; y=250.} {x=Width;y=Height} "white"
 
     let light_dir = Vec2.normalize {x = -1.;y = -2.}
 
-    let w = 300. / float(numRays)
+    let w = Width / float(NumRays)
 
-    [for i in 0..numRays do yield (i, float(i)/float(numRays))]
+    [for i in 0..NumRays do yield (i, float(i)/float(NumRays))]
     |> Seq.map (fun (i, t) -> (i, ((1.0 - t) * (r - c)) + (t * (r+c))))
     |> Seq.iter (fun (i, ray) -> 
         let (d,n) = intersectLevel level p ray
@@ -155,7 +162,7 @@ let test (gfx:Graphics2d) updatedState =
 
         let clr = sprintf "rgb(%i,%i,%i)" c c c
         gfx.fillRect {x=500. + float(i)*w;y=400. - h} {x=w;y=h*2.} clr
-        gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" b)
+        //gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" b)
     )
     
     level.Map
@@ -170,7 +177,7 @@ let test (gfx:Graphics2d) updatedState =
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
 
-    test gfx updatedState
+    overhead gfx updatedState
 
     window.requestAnimationFrame(fun t -> (gameLoop gfx t updatedState)) |> ignore
 
