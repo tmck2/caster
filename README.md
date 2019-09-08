@@ -32,12 +32,12 @@ The `index.html` file and other assets like an icon can be found in the `public`
 
 ## Ideas / TODO
 
-[ ] Texture mapping
-[ ] Slide on collision
-[ ] Spike: Play with lighting (does distance-based lighting from player look better or directional lighting combined with diffuse color)
-[ ] Load levels
-[ ] Bigger level/s
-[ ] Enemies
-[ ] Gun
-[ ] Bullets
-[ ] Pick ups
+* Texture mapping
+* Slide on collision
+* Spike: Play with lighting (does distance-based lighting from player look better or directional lighting combined with diffuse color)
+* Load levels
+* Bigger level/s
+* Enemies
+* Gun
+* Bullets
+* Pick ups
