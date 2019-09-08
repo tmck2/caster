@@ -9,9 +9,9 @@ open Level
 open Graphics2d
 open Keyboard
 
-let NumRays = 320
-let Width = 640.
-let Height = 480.
+let NumRays = 200
+let Width = 800.
+let Height = 600.
 let WallHeight = Height * 0.75
 let CeilingColor = "#87cefa"
 let FloorColor = "#567d46"
@@ -155,7 +155,7 @@ let render (gfx:Graphics2d) state =
     
     renderLevel gfx {x=0.; y=0.} intersections state
     
-    overhead gfx {x=575.; y=25.} intersections state
+    overhead gfx {x=750.; y=16.} intersections state
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
