@@ -9,8 +9,8 @@ open Model
 open Graphics2d
 
 let NumRays = 300
-let Width = 300.
-let Height = 300.
+let Width = 640.
+let Height = 480.
 
 let initState:Model.GameState = {
     Ticks = 0.
