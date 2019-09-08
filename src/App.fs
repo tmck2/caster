@@ -13,6 +13,8 @@ let NumRays = 320
 let Width = 640.
 let Height = 480.
 let WallHeight = Height * 0.75
+let CeilingColor = "#87cefa"
+let FloorColor = "#567d46"
 
 let brick = U3.Case1 (document.querySelector("#brick") :?> HTMLImageElement)
 
@@ -94,9 +96,8 @@ let renderLevel (gfx:Graphics2d) off intersections state =
     let {Player=player;CameraPlane=camera} = state
     let {Position=pos} = player
     
-    gfx.fillRect off {x=Width;y=Height/2.} "rgb(48,48,48)" // ceiling
-    gfx.fillRect (off + {x=0.; y=Height/2.}) {x=Width;y=Height/2.} "rgb(64,64,64)" // floor
-    gfx.strokeRect off {x=Width;y=Height} "white" // border
+    gfx.fillRect off {x=Width;y=Height/2.} CeilingColor // ceiling
+    gfx.fillRect (off + {x=0.; y=Height/2.}) {x=Width;y=Height/2.} FloorColor // floor
     
     let height d = 1./d * WallHeight
     
@@ -139,7 +140,7 @@ let renderLevel (gfx:Graphics2d) off intersections state =
         gfx.fillRect {x=0. + float(i) * w; y=0. + Height/2. - h} {x=w;y=h*2.} clr
     )
     
-    ()
+    gfx.strokeRect off {x=Width;y=Height} "white" // border
     
 let render (gfx:Graphics2d) state =
     gfx.fillRect {x=0.;y=0.} {x=800.;y=600.} "#263545"
