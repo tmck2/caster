@@ -29,3 +29,15 @@ JS dependencies are declared in `package.json`, while `package-lock.json` is a l
 ### Web assets
 
 The `index.html` file and other assets like an icon can be found in the `public` folder.
+
+## Ideas / TODO
+
+[ ] Texture mapping
+[ ] Slide on collision
+[ ] Spike: Play with lighting (does distance-based lighting from player look better or directional lighting combined with diffuse color)
+[ ] Load levels
+[ ] Bigger level/s
+[ ] Enemies
+[ ] Gun
+[ ] Bullets
+[ ] Pick ups
