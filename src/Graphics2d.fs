@@ -1,6 +1,5 @@
 module Graphics2d
 
-open Fable.Core
 open Fable.Import.JS
 open Fable.Core.JsInterop
 open Fable.Import.Browser
