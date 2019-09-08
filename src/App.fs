@@ -8,9 +8,10 @@ open Math
 open Model
 open Graphics2d
 
-let NumRays = 300
+let NumRays = 640
 let Width = 640.
 let Height = 480.
+let WallHeight = Height * 0.75
 
 let initState:Model.GameState = {
     Ticks = 0.
@@ -110,13 +111,7 @@ let overhead (gfx:Graphics2d) updatedState =
 
     let {Player=player;CameraPlane=c;Level=level} = updatedState
     let {Position=p;Direction=r} = player
-    let off = {x=200.;y=100.}
-    let size = {x=128.;y=128.}
-
-    let paintIntersection x =
-        match x with
-        | Some i -> gfx.fillCircle (i+off) 3. "red"
-        | None -> ()
+    let off = {x=575.;y=25.}
 
     let intersectLevel level p r =
         level.Map
@@ -134,11 +129,11 @@ let overhead (gfx:Graphics2d) updatedState =
         |> Seq.filter (fun (d,v) -> d >= 0.)
         |> Seq.minBy (fun (d,v) -> d)
 
-    let height d = 1./d * 200.
+    let height d = 1./d * WallHeight
 
-    gfx.fillRect {x=500.; y=250.} {x=Width;y=Height/2.} "rgb(32,32,32)"
-    gfx.fillRect {x=500.; y=400.} {x=Width;y=Height/2.} "rgb(64,64,64)"
-    gfx.strokeRect {x=500.; y=250.} {x=Width;y=Height} "white"
+    gfx.fillRect {x=0.; y=0.} {x=Width;y=Height/2.} "rgb(48,48,48)"
+    gfx.fillRect {x=0.; y=Height/2.} {x=Width;y=Height/2.} "rgb(64,64,64)"
+    gfx.strokeRect {x=0.; y=0.} {x=Width;y=Height} "white"
 
     let light_dir = Vec2.normalize {x = -1.;y = -2.}
 
@@ -161,7 +156,7 @@ let overhead (gfx:Graphics2d) updatedState =
         if (b > 0.) then c <- c + int(b * 128.) else c <- c + int(b * -128.)
 
         let clr = sprintf "rgb(%i,%i,%i)" c c c
-        gfx.fillRect {x=500. + float(i)*w;y=400. - h} {x=w;y=h*2.} clr
+        gfx.fillRect {x=0. + float(i) * w; y=0. + Height/2. - h} {x=w;y=h*2.} clr
         //gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" b)
     )
     
