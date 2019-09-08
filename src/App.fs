@@ -85,10 +85,10 @@ let overhead (gfx:Graphics2d) off intersections updatedState =
     gfx.strokeText {x=8.; y=32.} (sprintf "%A" dir)
     gfx.strokeText {x=8.; y=48.} (sprintf "%A" camera)
     
-let raycast (gfx:Graphics2d) off intersections state =
+let renderLevel (gfx:Graphics2d) off intersections state =
     
-    let {Player=player;CameraPlane=camera;Level=level} = state
-    let {Position=pos;Direction=dir} = player
+    let {Player=player;CameraPlane=camera} = state
+    let {Position=pos} = player
     
     gfx.fillRect off {x=Width;y=Height/2.} "rgb(48,48,48)" // ceiling
     gfx.fillRect (off + {x=0.; y=Height/2.}) {x=Width;y=Height/2.} "rgb(64,64,64)" // floor
@@ -98,7 +98,10 @@ let raycast (gfx:Graphics2d) off intersections state =
     
     let w = Width / float(NumRays)
 
-    intersections |> Seq.iter (fun (i, ray, (dist, norm)) -> 
+    intersections |> Seq.iter (fun (i, ray, (dist, norm)) ->
+        
+        // Project the ray-wall intersection onto the camera plane and get distance
+        // If we just use distance from intersection to player, we get a fish-eye effect
         let m = (dist * ray) + pos
         let x = m - pos
         let v = Vec2.normalize camera
@@ -106,12 +109,13 @@ let raycast (gfx:Graphics2d) off intersections state =
         let rej = Vec2.mag (x - proj)
         let h = height rej
 
+        // Crude directional light calculations for now
         let mutable c = 128
         let light_dir = Vec2.normalize {x = -1.;y = -2.}
         let b = (Vec2.dot norm light_dir)
         if (b > 0.) then c <- c + int(b * 128.) else c <- c + int(b * -128.)
-
         let clr = sprintf "rgb(%i,%i,%i)" c c c
+        
         gfx.fillRect {x=0. + float(i) * w; y=0. + Height/2. - h} {x=w;y=h*2.} clr
     )
     
@@ -124,11 +128,11 @@ let render (gfx:Graphics2d) state =
         let {Player=player;CameraPlane=camera;Level=level} = state
         let {Position=pos;Direction=dir} = player
         
-        [for i in 0..NumRays do yield (i, float(i)/float(NumRays))]
+        [for i in 0..NumRays-1 do yield (i, float(i)/float(NumRays))]
         |> Seq.map (fun (i, t) -> (i, ((1.0 - t) * (dir - camera)) + (t * (dir+camera))))
         |> Seq.map (fun (i, ray) -> (i, ray, level.intersectLevel pos ray))
     
-    raycast gfx {x=0.; y=0.} intersections state
+    renderLevel gfx {x=0.; y=0.} intersections state
     
     overhead gfx {x=575.; y=25.} intersections state
 
