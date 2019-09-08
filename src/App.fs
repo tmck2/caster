@@ -157,17 +157,14 @@ let overhead (gfx:Graphics2d) updatedState =
 
         let clr = sprintf "rgb(%i,%i,%i)" c c c
         gfx.fillRect {x=0. + float(i) * w; y=0. + Height/2. - h} {x=w;y=h*2.} clr
-        //gfx.strokeText {x=0.; y=64.+float(i)*16.} (sprintf "%A" b)
     )
     
     level.Map
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
 
-    //gfx.strokeLine (p + off - (50. * c)) (p + off + (50. * c)) "white"
-
-    gfx.strokeText {x=0.; y=16.} (sprintf "%A" p)
-    gfx.strokeText {x=0.; y=32.} (sprintf "%A" r)
-    gfx.strokeText {x=0.; y=48.} (sprintf "%A" c)
+    gfx.strokeText {x=8.; y=16.} (sprintf "%A" p)
+    gfx.strokeText {x=8.; y=32.} (sprintf "%A" r)
+    gfx.strokeText {x=8.; y=48.} (sprintf "%A" c)
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState

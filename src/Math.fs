@@ -2,6 +2,10 @@ module Math
 
 type Vec2 = 
     { x: float; y: float }
+    
+    override this.ToString() =
+        sprintf "(%.3f, % .3f)" this.x this.y;
+    
     static member (*) (s:float, v:Vec2):Vec2 = { x = s*v.x; y = s*v.y }
     static member (+) (a:Vec2, b:Vec2):Vec2 = { x = a.x + b.x; y = a.y + b.y }
     static member (-) (a:Vec2, b:Vec2):Vec2 = { x = a.x - b.x; y = a.y - b.y }
