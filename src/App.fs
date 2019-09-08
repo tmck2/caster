@@ -1,5 +1,7 @@
 module App
 
+open Fable
+open Fable.Core
 open Fable.Import.Browser
 open Math
 open Model
@@ -7,18 +9,20 @@ open Level
 open Graphics2d
 open Keyboard
 
-let NumRays = 640
+let NumRays = 320
 let Width = 640.
 let Height = 480.
 let WallHeight = Height * 0.75
 
+let brick = U3.Case1 (document.querySelector("#brick") :?> HTMLImageElement)
+
 let initState:Model.GameState = {
     Ticks = 0.
     Player = {
-        Position = { x = 8.; y = 11. }
-        Direction = { x = 0.; y = -1. }
+        Position = { x = 6.5; y = 15.5 }
+        Direction = Vec2.normalize { x = 0.7; y = -0.7 }
     }
-    CameraPlane = { x = 0.66; y = 0. }
+    CameraPlane = Vec2.perp (0.33 * (Vec2.normalize { x = 0.7; y = -0.7  }))
     Level = new Level()
 }
 
@@ -73,7 +77,7 @@ let overhead (gfx:Graphics2d) off intersections updatedState =
     let {Player=player;CameraPlane=camera;Level=level} = updatedState
     let {Position=pos;Direction=dir} = player
     
-    intersections |> Seq.iter (fun (_, ray, (dist, _)) -> 
+    intersections |> Seq.iter (fun (_, ray, (dist, _, _)) -> 
         let m = (dist * ray) + pos
         gfx.strokeLine (pos + off) (m + off) "white"
     )
@@ -98,9 +102,9 @@ let renderLevel (gfx:Graphics2d) off intersections state =
     
     let w = Width / float(NumRays)
 
-    intersections |> Seq.iter (fun (i, ray, (dist, norm)) ->
+    intersections |> Seq.iter (fun (i, ray, (dist, norm, t)) ->
         
-        // Project the ray-wall intersection onto the camera plane and get distance
+        //// Project the ray-wall intersection onto the camera plane and get distance
         // If we just use distance from intersection to player, we get a fish-eye effect
         let m = (dist * ray) + pos
         let x = m - pos
@@ -108,14 +112,30 @@ let renderLevel (gfx:Graphics2d) off intersections state =
         let proj = (Vec2.dot x v) * v
         let rej = Vec2.mag (x - proj)
         let h = height rej
-
-        // Crude directional light calculations for now
-        let mutable c = 128
-        let light_dir = Vec2.normalize {x = -1.;y = -2.}
-        let b = (Vec2.dot norm light_dir)
-        if (b > 0.) then c <- c + int(b * 128.) else c <- c + int(b * -128.)
-        let clr = sprintf "rgb(%i,%i,%i)" c c c
         
+        // Crude directional light calculations for now
+        let light_dir = Vec2.normalize {x = 1.;y = 2.}
+        let dot = Vec2.dot norm light_dir
+        let c = if (abs(dot) > 0.5) then 0.5 else 0.
+        console.log (Vec2.dot norm light_dir)
+        let clr = sprintf "rgb(0,0,0,%f)" c
+        
+        // Compute texture coordinates
+        let texture_width = 300.
+        let texture_height = 300.
+        let sx = (t - floor(t)) * (texture_width - 1.)
+        let sy = 0.
+        let sWidth = 1.
+        let sHeight = texture_height
+        let dx = 0. + float(i) * w
+        let dy = 0. + Height/2. - h
+        let dWidth = w
+        let dHeight = h * 2.
+        
+        // draw vertical wall chunk
+        gfx.drawImage brick sx sy sWidth sHeight dx dy dWidth dHeight
+        
+        // draw darker rect in front of vertical wall chunk to shade it
         gfx.fillRect {x=0. + float(i) * w; y=0. + Height/2. - h} {x=w;y=h*2.} clr
     )
     
@@ -130,7 +150,7 @@ let render (gfx:Graphics2d) state =
         
         [for i in 0..NumRays-1 do yield (i, float(i)/float(NumRays))]
         |> Seq.map (fun (i, t) -> (i, ((1.0 - t) * (dir - camera)) + (t * (dir+camera))))
-        |> Seq.map (fun (i, ray) -> (i, ray, level.intersectLevel pos ray))
+        |> Seq.map (fun (i, ray) -> (i, ray, level.intersect pos ray))
     
     renderLevel gfx {x=0.; y=0.} intersections state
     

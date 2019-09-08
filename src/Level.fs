@@ -19,26 +19,29 @@ type Level() =
         Wall.create (12.8,6.4) (12.8,9.6)
         Wall.create (12.8,9.6) (9.6,9.6)
         Wall.create (9.6,9.6) (9.6,6.4)
-
-        Wall.create (9.6,12.8) (12.8,12.8)
-        Wall.create (12.8,12.8) (12.8,16.)
-        Wall.create (12.8,16.) (9.6,16.)
-        Wall.create (9.6,16.) (9.6,12.8)
+        
+        Wall.create (9.6, 12.4) (12.8,12.4)
+        Wall.create (12.8,12.4) (12.8,15.6)
+        Wall.create (12.8,15.6) (9.6,15.6)
+        Wall.create (9.6,15.6) (9.6,12.4)
     ]
     
-    member this.intersectLevel pos ray =
+    member this.intersect pos ray =
         this.Map
         |> Seq.map (fun w ->
-                        (w,intersect w.Start (Vec2.perp (w.End-w.Start)) pos ray))
+                        (w,Math.intersect w.Start (Vec2.perp (w.End-w.Start)) pos ray))
         |> Seq.map (fun (w,dist) ->
                         match dist with
-                        | Some d -> 
-                            let v = (d * ray) + pos
+                        | Some dist -> 
+                            let v = (dist * ray) + pos
                             if pointOnLine w.Start w.End v then
-                                (d, Vec2.normalize (Vec2.perp (w.End-w.Start)))
+                                (dist, // distance to wall
+                                 Vec2.normalize (Vec2.perp (w.End-w.Start)), // vector perpendicular to wall
+                                 (Vec2.mag (v - w.Start))
+                                )
                             else
-                                (1000., {x=0.;y=0.})
-                        | None -> (1000., {x=0.;y=0.}))
-        |> Seq.filter (fun (d,_) -> d >= 0.)
-        |> Seq.minBy (fun (d,_) -> d)
+                                (1000., {x=0.;y=0.}, 0.0)
+                        | None -> (1000., {x=0.;y=0.}, 0.0))
+        |> Seq.filter (fun (d,_,_) -> d >= 0.)
+        |> Seq.minBy (fun (d,_,_) -> d)
 
