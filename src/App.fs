@@ -75,6 +75,8 @@ let update t gameState =
         Ticks = t}
     
 let overhead (gfx:Graphics2d) off intersections updatedState =
+    
+    gfx.fillRect {x=0.;y=0.} {x=Width;y=80.} "rgb(0,0,0,0.5)"
 
     let {Player=player;CameraPlane=camera;Level=level} = updatedState
     let {Position=pos;Direction=dir} = player
