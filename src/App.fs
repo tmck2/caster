@@ -105,13 +105,13 @@ let debugConsole (gfx:Graphics2d) off intersections state =
     let {Player=player;CameraPlane=camera} = state
     let {Position=pos;Direction=dir} = player
     
-    gfx.fillRect {x=0.;y=0.} {x=Width;y=34.} "rgb(0,0,0,0.5)"
+    gfx.fillRect {x=0.;y=0.} {x=Width;y=66.} "rgb(0,0,0,0.5)"
     
-    overheadMap gfx {x=255.; y=4.} intersections state
+    overheadMap gfx {x=590.; y=16.} intersections state
     
-    gfx.strokeText {x=4.; y=8.} (sprintf "pos %A" pos)
-    gfx.strokeText {x=4.; y=18.} (sprintf "dir %A" dir)
-    gfx.strokeText {x=4.; y=28.} (sprintf "cam %A" camera)
+    gfx.strokeText {x=8.; y=16.} (sprintf "pos %A" pos)
+    gfx.strokeText {x=8.; y=34.} (sprintf "dir %A" dir)
+    gfx.strokeText {x=8.; y=50.} (sprintf "cam %A" camera)
     
     
 let renderLevel (gfx:Graphics2d) off intersections state =
