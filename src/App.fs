@@ -16,7 +16,10 @@ let WallHeight = Height
 let CeilingColor = "#87cefa"
 let FloorColor = "#567d46"
 
+// TODO: move textures into own type and associate them with walls so that we can have different textures per wall
 let brick = U3.Case1 (document.querySelector("#brick") :?> HTMLImageElement)
+let TextureWidth = 300.
+let TextureHeight = 300.
 
 let initState:Model.GameState = {
     Ticks = 0.
@@ -122,7 +125,7 @@ let renderLevel (gfx:Graphics2d) off intersections state =
     let height d = 1./d * WallHeight
     
     let w = Width / float(NumRays)
-
+    
     intersections |> Seq.iter (fun (i, ray, (dist, norm, t)) ->
         
         //// Project the ray-wall intersection onto the camera plane and get distance
@@ -137,16 +140,13 @@ let renderLevel (gfx:Graphics2d) off intersections state =
         // Crude directional light calculations for now
         let light_dir = Vec2.normalize {x = 1.;y = 2.}
         let dot = Vec2.dot norm light_dir
-        let c = if (abs(dot) > 0.5) then 0.5 else 0.
-        let clr = sprintf "rgb(0,0,0,%f)" c
+        let clr = if (abs(dot) > 0.5) then "rgb(0,0,0,0.5)" else "rgb(0,0,0,0)"
         
         // Compute texture coordinates
-        let texture_width = 300.
-        let texture_height = 300.
-        let sx = (t - floor(t)) * (texture_width - 1.)
+        let sx = (t - floor(t)) * (TextureWidth - 1.)
         let sy = 0.
         let sWidth = 1.
-        let sHeight = texture_height
+        let sHeight = TextureHeight
         let dx = 0. + float(i) * w
         let dy = 0. + Height/2. - h
         let dWidth = w
