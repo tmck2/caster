@@ -15,6 +15,7 @@ let Height = 480.
 let WallHeight = Height
 let CeilingColor = "#87cefa"
 let FloorColor = "#567d46"
+let PlayerRadius = 0.75
 
 // TODO: move textures into own type and associate them with walls so that we can have different textures per wall
 let brick = U3.Case1 (document.querySelector("#brick") :?> HTMLImageElement)
@@ -49,7 +50,7 @@ let update t gameState =
     let levelCircleCollision pos =
         level.Map
         |> Seq.exists (fun w ->
-            lineCircleCollision w.Start w.End pos 1.75 
+            lineCircleCollision w.Start w.End pos PlayerRadius
         )
 
     if (levelCircleCollision updated_pos) then
