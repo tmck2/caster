@@ -9,9 +9,9 @@ open Level
 open Graphics2d
 open Keyboard
 
-let NumRays = 320
-let Width = 320.
-let Height = 200.
+let NumRays = 640
+let Width = 640.
+let Height = 480.
 let WallHeight = Height
 let CeilingColor = "#87cefa"
 let FloorColor = "#567d46"
@@ -162,7 +162,7 @@ let renderLevel (gfx:Graphics2d) off intersections state =
     gfx.strokeRect off {x=Width;y=Height} "white" // border
     
 let render (gfx:Graphics2d) state =
-    gfx.fillRect {x=0.;y=0.} {x=800.;y=600.} "#263545"
+    gfx.fillRect {x=0.;y=0.} {x=Width;y=Height} "#263545"
     
     let intersections =
         let {Player=player;CameraPlane=camera;Level=level} = state
