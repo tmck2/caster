@@ -26,6 +26,7 @@ let initState:Model.GameState = {
     }
     CameraPlane = Vec2.perp (0.33 * (Vec2.normalize { x = 0.7; y = -0.7  }))
     Level = new Level()
+    ShowDebugConsole = false
 }
 
 let update t gameState =
@@ -35,9 +36,9 @@ let update t gameState =
     let {Position=pos; Direction=dir} = player
 
     let mutable updated_pos =
-        if UpPressed then
+        if Keys.[UpKey] then
             pos + (s * dir)
-        elif DownPressed then
+        elif Keys.[DownKey] then
             pos + (-s * dir)
         else
             pos
@@ -52,22 +53,30 @@ let update t gameState =
         updated_pos <- pos
 
     let updated_dir =
-        if RightPressed then
+        if Keys.[RightKey] then
             Vec2.rotate (-sa) dir 
-        elif LeftPressed then
+        elif Keys.[LeftKey] then
             Vec2.rotate (sa) dir
         else
             dir
 
     let updated_camera =
-        if RightPressed then
+        if Keys.[RightKey] then
             Vec2.rotate (-sa) camera 
-        elif LeftPressed then
+        elif Keys.[LeftKey] then
             Vec2.rotate (sa) camera
         else
             camera
-
+            
+    let showDebugConsole =
+        if Keys.[CKey] then
+            not gameState.ShowDebugConsole
+        else
+            gameState.ShowDebugConsole
+    Keys.[CKey] <- false
+            
     { gameState with
+        ShowDebugConsole = showDebugConsole
         Player={gameState.Player with
                     Position = updated_pos
                     Direction = updated_dir}
@@ -75,11 +84,9 @@ let update t gameState =
         Ticks = t}
     
 let overheadMap (gfx:Graphics2d) off intersections updatedState =
-    
-    gfx.fillRect {x=0.;y=0.} {x=Width;y=34.} "rgb(0,0,0,0.5)"
 
-    let {Player=player;CameraPlane=camera;Level=level} = updatedState
-    let {Position=pos;Direction=dir} = player
+    let {Player=player;Level=level} = updatedState
+    let {Position=pos} = player
     
     intersections |> Seq.iter (fun (_, ray, (dist, _, _)) -> 
         let m = (dist * ray) + pos
@@ -89,9 +96,20 @@ let overheadMap (gfx:Graphics2d) off intersections updatedState =
     level.Map
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
 
-    gfx.strokeText {x=4.; y=8.} (sprintf "%A" pos)
-    gfx.strokeText {x=4.; y=18.} (sprintf "%A" dir)
-    gfx.strokeText {x=4.; y=28.} (sprintf "%A" camera)
+    
+let debugConsole (gfx:Graphics2d) off intersections state =
+    
+    let {Player=player;CameraPlane=camera} = state
+    let {Position=pos;Direction=dir} = player
+    
+    gfx.fillRect {x=0.;y=0.} {x=Width;y=34.} "rgb(0,0,0,0.5)"
+    
+    overheadMap gfx {x=255.; y=4.} intersections state
+    
+    gfx.strokeText {x=4.; y=8.} (sprintf "pos %A" pos)
+    gfx.strokeText {x=4.; y=18.} (sprintf "dir %A" dir)
+    gfx.strokeText {x=4.; y=28.} (sprintf "cam %A" camera)
+    
     
 let renderLevel (gfx:Graphics2d) off intersections state =
     
@@ -156,7 +174,8 @@ let render (gfx:Graphics2d) state =
     
     renderLevel gfx {x=0.; y=0.} intersections state
     
-    overheadMap gfx {x=255.; y=4.} intersections state
+    if state.ShowDebugConsole then
+        debugConsole gfx {x=255.; y=4.} intersections state
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState

@@ -13,5 +13,6 @@ type GameState = {
     Player: Player
     CameraPlane: Vec2
     Level: Level
+    ShowDebugConsole: bool
 }
 
