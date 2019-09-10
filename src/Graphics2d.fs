@@ -31,7 +31,7 @@ type Graphics2d(ctx:CanvasRenderingContext2D) =
 
     member this.strokeText (p:Vec2) (str:string) =
         ctx.fillStyle <- !^("white")
-        ctx.font <- "16px sans-serif"
+        ctx.font <- "8px sans-serif"
         ctx.fillText(str,p.x,p.y)
         
     member this.drawImage image sx sy sWidth sHeight dx dy dWidth dHeight =

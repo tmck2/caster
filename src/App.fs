@@ -9,10 +9,10 @@ open Level
 open Graphics2d
 open Keyboard
 
-let NumRays = 200
-let Width = 800.
-let Height = 600.
-let WallHeight = Height * 0.75
+let NumRays = 320
+let Width = 320.
+let Height = 200.
+let WallHeight = Height
 let CeilingColor = "#87cefa"
 let FloorColor = "#567d46"
 
@@ -74,9 +74,9 @@ let update t gameState =
         CameraPlane=updated_camera
         Ticks = t}
     
-let overhead (gfx:Graphics2d) off intersections updatedState =
+let overheadMap (gfx:Graphics2d) off intersections updatedState =
     
-    gfx.fillRect {x=0.;y=0.} {x=Width;y=80.} "rgb(0,0,0,0.5)"
+    gfx.fillRect {x=0.;y=0.} {x=Width;y=34.} "rgb(0,0,0,0.5)"
 
     let {Player=player;CameraPlane=camera;Level=level} = updatedState
     let {Position=pos;Direction=dir} = player
@@ -89,9 +89,9 @@ let overhead (gfx:Graphics2d) off intersections updatedState =
     level.Map
     |> Seq.iter (fun wall -> gfx.strokeLine (wall.Start + off) (wall.End + off) "white")
 
-    gfx.strokeText {x=8.; y=16.} (sprintf "%A" pos)
-    gfx.strokeText {x=8.; y=32.} (sprintf "%A" dir)
-    gfx.strokeText {x=8.; y=48.} (sprintf "%A" camera)
+    gfx.strokeText {x=4.; y=8.} (sprintf "%A" pos)
+    gfx.strokeText {x=4.; y=18.} (sprintf "%A" dir)
+    gfx.strokeText {x=4.; y=28.} (sprintf "%A" camera)
     
 let renderLevel (gfx:Graphics2d) off intersections state =
     
@@ -120,7 +120,6 @@ let renderLevel (gfx:Graphics2d) off intersections state =
         let light_dir = Vec2.normalize {x = 1.;y = 2.}
         let dot = Vec2.dot norm light_dir
         let c = if (abs(dot) > 0.5) then 0.5 else 0.
-        console.log (Vec2.dot norm light_dir)
         let clr = sprintf "rgb(0,0,0,%f)" c
         
         // Compute texture coordinates
@@ -157,7 +156,7 @@ let render (gfx:Graphics2d) state =
     
     renderLevel gfx {x=0.; y=0.} intersections state
     
-    overhead gfx {x=750.; y=16.} intersections state
+    overheadMap gfx {x=255.; y=4.} intersections state
 
 let rec gameLoop (gfx:Graphics2d) t gameState =
     let updatedState = update t gameState
