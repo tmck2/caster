@@ -33,8 +33,9 @@ The `index.html` file and other assets like an icon can be found in the `public`
 ## Ideas / TODO
 
 * Texture mapping
+** Texture mapping slowed engine down (runs well in Chrome...not so much in Safari)
+** Look at implementing in WebGL shader
 * Slide on collision
-* Spike: Play with lighting (does distance-based lighting from player look better or directional lighting combined with diffuse color)
 * Load levels
 * Bigger level/s
 * Enemies
