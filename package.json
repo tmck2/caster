@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "start": "dotnet fable watch ./src -s --run webpack serve",
-    "build": "dotnet fable ./src && webpack"
+    "start": "dotnet fable watch ./src -o build -s --run webpack serve",
+    "build": "dotnet fable ./src -o build && webpack"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

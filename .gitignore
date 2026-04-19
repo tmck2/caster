@@ -11,8 +11,7 @@ src/bin
 src/.idea
 
 # Fable output
-src/*.fs.js
-src/*.fs.js.map
+build/
 src/fable_modules/
 
 # Webpack output
