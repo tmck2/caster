@@ -1,8 +1,20 @@
+# Node
 node_modules/
-*.swp
 
+# Vim
+*.swp
 */**/*.swp
 
-
+# F# / .NET
 src/obj
+src/bin
 src/.idea
+
+# Fable output
+src/*.fs.js
+src/*.fs.js.map
+src/fable_modules/
+
+# Webpack output
+public/bundle.js
+public/bundle.js.map

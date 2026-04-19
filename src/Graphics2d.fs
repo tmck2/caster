@@ -1,8 +1,7 @@
 module Graphics2d
 
-open Fable.Import.JS
 open Fable.Core.JsInterop
-open Fable.Import.Browser
+open Browser.Types
 open Math
 
 type Graphics2d(ctx:CanvasRenderingContext2D) =
@@ -26,7 +25,7 @@ type Graphics2d(ctx:CanvasRenderingContext2D) =
     member this.fillCircle (c:Vec2) (r:float) (color:string) =
         ctx.beginPath()
         ctx.fillStyle <- !^color
-        ctx.arc(c.x, c.y, r, 0., 2. * Math.PI)
+        ctx.arc(c.x, c.y, r, 0., 2. * System.Math.PI)
         ctx.fill()
 
     member this.strokeText (p:Vec2) (str:string) =

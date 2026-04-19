@@ -4,17 +4,21 @@ A browser-based ray-casting engine built using F# and the Fable compiler.
 
 ## Requirements
 
-* [dotnet SDK](https://www.microsoft.com/net/download/core) 2.1 or higher
+* [dotnet SDK](https://www.microsoft.com/net/download/core) 6.0 or higher
 * [node.js](https://nodejs.org) with [npm](https://www.npmjs.com/)
 * An F# editor like Visual Studio, Visual Studio Code with [Ionide](http://ionide.io/) or [JetBrains Rider](https://www.jetbrains.com/rider/).
 
 ## Building and running the app
 
+* Install .NET tools: `dotnet tool restore`
 * Install JS dependencies: `npm install`
-* Start Webpack dev server: `npx webpack-dev-server` or `npm start`
+* Start development server: `npm start`
 * After the first compilation is finished, in your browser open: http://localhost:8080/
 
 Any modification you do to the F# code will be reflected in the web page after saving.
+
+To build for production:
+* Run: `npm run build`
 
 ## Project structure
 
@@ -22,9 +26,13 @@ Any modification you do to the F# code will be reflected in the web page after s
 
 JS dependencies are declared in `package.json`, while `package-lock.json` is a lock file automatically generated.
 
+### Fable
+
+This project uses [Fable 4](https://fable.io/), which compiles F# to JavaScript. Fable is installed as a dotnet local tool (see `.config/dotnet-tools.json`). The `npm start` command runs `dotnet fable watch` to compile F# files to JavaScript, then runs Webpack in development mode.
+
 ### Webpack
 
-[Webpack](https://webpack.js.org) is a JS bundler with extensions, like a static dev server that enables hot reloading on code changes. Fable interacts with Webpack through the `fable-loader`. Configuration for Webpack is defined in the `webpack.config.js` file. Note this sample only includes basic Webpack configuration for development mode, if you want to see a more comprehensive configuration check the [Fable webpack-config-template](https://github.com/fable-compiler/webpack-config-template/blob/master/webpack.config.js).
+[Webpack](https://webpack.js.org) is a JS bundler with extensions, like a static dev server that enables hot reloading on code changes. Configuration for Webpack is defined in the `webpack.config.js` file. Note this sample only includes basic Webpack configuration for development mode, if you want to see a more comprehensive configuration check the [Fable webpack-config-template](https://github.com/fable-compiler/webpack-config-template/blob/master/webpack.config.js).
 
 ### Web assets
 

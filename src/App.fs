@@ -2,7 +2,8 @@ module App
 
 open Fable
 open Fable.Core
-open Fable.Import.Browser
+open Browser.Types
+open Browser.Dom
 open Math
 open Model
 open Level

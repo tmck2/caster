@@ -1,7 +1,8 @@
 ﻿module Keyboard
 
 open Fable.Core.JsInterop
-open Fable.Import.Browser
+open Browser.Types
+open Browser.Dom
 
 let LeftKey = 37
 let UpKey = 38
@@ -16,5 +17,5 @@ let update (e : KeyboardEvent, pressed) =
     Keys.[keyCode] <- pressed
     
 let initKeyboard () =
-    document.addEventListener("keydown", !^(fun e -> update(e :?> _, true)))
-    document.addEventListener("keyup", !^(fun e -> update(e :?> _, false)))
+    document.addEventListener("keydown", fun e -> update(e :?> KeyboardEvent, true))
+    document.addEventListener("keyup", fun e -> update(e :?> KeyboardEvent, false))
